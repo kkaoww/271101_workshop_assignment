@@ -1,42 +1,46 @@
-#This code demonstrate how to show location of hand landmark
+from cvzone import FPS
+from cvzone.FaceDetectionModule import FaceDetector
+from cvzone.HandTrackingModule import HandDetector
 import cv2
-import mediapipe as mp
 
-Nfing = 5
 cap = cv2.VideoCapture(0)
-
-#Call hand pipe line module
-mpHands = mp.solutions.hands
-hands = mpHands.Hands()
-mpDraw = mp.solutions.drawing_utils
+detectors = HandDetector()
+fpsReader = FPS()
 
 while True:
-    success, img = cap.read()
-    imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    results = hands.process(imgRGB)
-    #print(results.multi_hand_landmarks)
+    ret, frame = cap.read()
+    hands, bboxs = detectors.findHands(frame)
+    cv2.putText(frame,"kaow" , (10, 80), cv2.FONT_HERSHEY_PLAIN, 3,(255, 0, 255), 3)
+ 
+    if hands:
+        handsu=hands[0]
+        fingersu=detectors.fingersUp(handsu)
+        print(fingersu)
+        
+        if fingersu[0] == 1 :
+         cv2.putText(frame,"Thumb" , (50, 150), cv2.FONT_HERSHEY_PLAIN, 2,(255, 0, 255), 3)
+
+        if fingersu[1] == 1 :
+         cv2.putText(frame,"Index" , (180, 150), cv2.FONT_HERSHEY_PLAIN, 2,(255, 0, 255), 3)
+
+        if fingersu[2] == 1 :
+         cv2.putText(frame,"Middle" , (280, 150), cv2.FONT_HERSHEY_PLAIN, 2,(255, 0, 255), 3)
+
+        if fingersu[3] == 1 :
+         cv2.putText(frame,"Ring" , (400, 150), cv2.FONT_HERSHEY_PLAIN, 2,(255, 0, 255), 3)
+
+        if fingersu[4] == 1 :
+         cv2.putText(frame,"Little" , (480, 150), cv2.FONT_HERSHEY_PLAIN, 2,(255, 0, 255), 3)
+ 
+ 
+ 
+    fps, frame = fpsReader.update(frame)
+
+    cv2.imshow("Image", frame)
     
-    if results.multi_hand_landmarks:
-        for handLms in results.multi_hand_landmarks:
-            for id, lm in enumerate(handLms.landmark):
-                h, w, c = img.shape
-                cx, cy = int(lm.x * w), int(lm.y * h)
-                if id == 4:
-                    id4 = int(id)
-                    cx4 = cx
-                if id == 3:
-                    id3 = int(id)
-                    cx3 = cx
-            if cx4 > cx3:
-                Nfing = 4
-            else:
-                Nfing = 5
-                    
-            mpDraw.draw_landmarks(img, handLms, mpHands.HAND_CONNECTIONS)
-    
-    cv2.putText(img, str(int(Nfing)), (10, 70), cv2.FONT_HERSHEY_PLAIN, 3,
-                (255, 0, 255), 3)
-    cv2.imshow("Image", img)
-    cv2.waitKey(1)
-#Closeing all open windows
-#cv2.destroyAllWindows()
+  
+    if ord('q') == 0xFF & cv2.waitKey(1):
+        break
+
+cap.release()
+cv2.destroyAllWindows() 
